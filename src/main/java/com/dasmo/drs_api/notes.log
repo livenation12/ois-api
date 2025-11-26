@@ -1,0 +1,10 @@
+
+--------------- AUTHENTICATION PROCESS ---------------
+			request {username,password} 
+
+--------------- AuthContoller.authenticate ---------------
+			authManager.authenticate(
+  				new UsernamePasswordAuthenticationToken(username, password)
+			);
+			
+--------------- CustomUserDetailsService extended UserDetails.loadUserByUsername ------------
