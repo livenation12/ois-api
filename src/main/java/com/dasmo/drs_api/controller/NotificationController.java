@@ -40,5 +40,15 @@ public class NotificationController {
 		return ApiResponse.success(unreadCount);
 	}
 
+	@GetMapping("/user-office/unread-count")
+	public ResponseEntity<ApiResponse<Object>> getUserOfficeUnreadCount(){
+		Integer unreadCount = notifService.fetchUserOfficeUnreadCount();
+		return ApiResponse.success(unreadCount);
+	}
 
+	@GetMapping("/user/unread-count")
+	public ResponseEntity<ApiResponse<Object>> getUserUnreadCount(){
+		Integer unreadCount = notifService.fetchUserUnreadCount();
+		return ApiResponse.success(unreadCount);
+	}
 }

@@ -33,7 +33,7 @@ public class UserService {
 		return userMapper.toMinDtoList(users);
 	}
 
-	public User getUserPrincipal() {
+	public User fetchUserPrincipal() {
 		User user = PrincipalUtil.getAuthenticatedUser();
 		return userRepo.findById(user.getId()).orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 	}

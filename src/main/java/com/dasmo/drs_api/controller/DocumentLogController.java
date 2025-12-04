@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dasmo.drs_api.dto.DocumentLogDto;
 import com.dasmo.drs_api.payload.ApiResponse;
-import com.dasmo.drs_api.service.DocumentActionService;
+import com.dasmo.drs_api.service.DocumentLogService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,11 +17,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DocumentLogController {
 
-	private final DocumentActionService docActionService;
+	private final DocumentLogService docLogService;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<Object>> getDocumentActionDetails(@PathVariable Long id){
-		DocumentLogDto docAction = docActionService.fetchById(id);
-		return ApiResponse.success(docAction);
+	public ResponseEntity<ApiResponse<Object>> getDocumentLog(@PathVariable Long id) {
+		DocumentLogDto docLog = docLogService.fetchById(id);
+		return ApiResponse.success(docLog);
 	}
+
 }

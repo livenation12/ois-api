@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dasmo.drs_api.constants.DocumentStatus;
 import com.dasmo.drs_api.dto.DocumentDto;
 import com.dasmo.drs_api.dto.DocumentFullDto;
+import com.dasmo.drs_api.dto.DocumentLogMinDto;
 import com.dasmo.drs_api.dto.RoutingSlipDto;
 import com.dasmo.drs_api.dto.request.DocumentActionRequest;
 import com.dasmo.drs_api.dto.request.DocumentRequest;
 import com.dasmo.drs_api.payload.ApiResponse;
 import com.dasmo.drs_api.service.DocumentActionService;
+import com.dasmo.drs_api.service.DocumentLogService;
 import com.dasmo.drs_api.service.DocumentService;
 import com.dasmo.drs_api.service.RoutingSlipService;
 
@@ -31,13 +33,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DocumentController {
 
-	private final DocumentService documentService;
+	private final DocumentService docService;
 	private final DocumentActionService docActionService;
 	private final RoutingSlipService routingService;
+	private final DocumentLogService docLogService;
+
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<Object>> doCreateDocument(@ModelAttribute @Validated DocumentRequest request) {
-		documentService.doCreate(request);
+		docService.doCreate(request);
 		return ApiResponse.success("Added successfully");
 	}
 
@@ -54,38 +58,51 @@ public class DocumentController {
 		return ApiResponse.success("Document successfuly received");
 	}
 
-	@PostMapping("/{id}/office-receive")
+	@PostMapping("/{id}/office/receive")
 	public ResponseEntity<ApiResponse<Object>> doReceiveOfficeDocument(@PathVariable Long id){
 		docActionService.doReceiveOfficeDocument(id);
 		return ApiResponse.success("Office document successfuly received");
+	}
+
+	@PostMapping("/{id}/revert")
+	public ResponseEntity<ApiResponse<Object>> doRevertDocument(@PathVariable Long id, @RequestBody DocumentActionRequest request) {
+		docActionService.doRevertDocument(id, request);
+		return ApiResponse.success("Document reverted successfully");
 	}
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<Object>> getAllDocuments(
 			@RequestParam(name = "status", required = false) DocumentStatus status) {
 		if (status != null) {
-			List<DocumentDto> filteredByStatusDocuments = documentService.fetchByFilteredStatus(status);
+			List<DocumentDto> filteredByStatusDocuments = docService.fetchByFilteredStatus(status);
 			return ApiResponse.success(filteredByStatusDocuments);
 		}
-		List<DocumentDto> documentList = documentService.fetchAll();
+		List<DocumentDto> documentList = docService.fetchAll();
 		return ApiResponse.success(documentList);
 	}
 
-	@GetMapping("/principal")
+	@GetMapping("/user")
 	public ResponseEntity<ApiResponse<Object>> getCreatedDocuments() {
-		List<DocumentDto> documents = documentService.fetchCreatedDocuments();
+		List<DocumentDto> documents = docService.fetchCreatedDocuments();
 		return ApiResponse.success(documents);
 	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<Object>> getDocumentDetails(@PathVariable Long id) {
-		DocumentDto document = documentService.fetchDocumentDetails(id);
+		DocumentDto document = docService.fetchDocumentDetails(id);
 		return ApiResponse.success(document);
 	}
 
 	@GetMapping("/{id}/full-details")
 	public ResponseEntity<ApiResponse<Object>> getDocumentFullDetails(@PathVariable Long id) {
-		DocumentFullDto document = documentService.fetchDocumentFullDetails(id);
+		DocumentFullDto document = docService.fetchDocumentFullDetails(id);
 		return ApiResponse.success(document);
+	}
+
+	@GetMapping("/{id}/logs")
+	public ResponseEntity<ApiResponse<Object>> getDocumentLogs(@PathVariable Long id){
+		List<DocumentLogMinDto> docLogs = docLogService.fetchLogsOfDocument(id);
+		return ApiResponse.success(docLogs);
 	}
 
 	@GetMapping("/{id}/routing-slips")
@@ -96,49 +113,63 @@ public class DocumentController {
 
 	@GetMapping("/encoded")
 	public ResponseEntity<ApiResponse<Object>> getEncodedDocuments() {
-		List<DocumentDto> documents = documentService.fetchEncodedDocuments();
+		List<DocumentDto> documents = docService.fetchEncodedDocuments();
 		return ApiResponse.success(documents);
 	}
 
 	@GetMapping("/forwarded")
 	public ResponseEntity<ApiResponse<Object>> getForwardedDocuments() {
-		List<DocumentDto> documents = documentService.fetchForwardedDocuments();
+		List<DocumentDto> documents = docService.fetchForwardedDocuments();
 		return ApiResponse.success(documents);
 	}
 
-	@GetMapping("/office-forwarded")
+	@GetMapping("/office/forwarded")
 	public ResponseEntity<ApiResponse<Object>> getOfficeForwardedDocuments() {
-		List<DocumentDto> documents = documentService.fetchOfficeForwardedDocuments();
+		List<DocumentDto> documents = docService.fetchOfficeForwardedDocuments();
 		return ApiResponse.success(documents);
 	}
-	@GetMapping("/office-pendings")
+
+	@GetMapping("/office/pendings")
 	public ResponseEntity<ApiResponse<Object>> getOfficePendingDocuments() {
-		List<DocumentDto> documents = documentService.fetchOfficePendingDocuments();
+		List<DocumentDto> documents = docService.fetchOfficePendingDocuments();
 		return ApiResponse.success(documents);
 	}
 
-	@GetMapping("/office-received")
+	@GetMapping("/office/received")
 	public ResponseEntity<ApiResponse<Object>> getOfficeReceivedDocuments() {
-		List<DocumentDto> documents = documentService.fetchOfficeReceivedDocuments();
+		List<DocumentDto> documents = docService.fetchOfficeReceivedDocuments();
 		return ApiResponse.success(documents);
 	}
 
-	@GetMapping("/user-forwarded")
+	@GetMapping("/office/reverted")
+	public ResponseEntity<ApiResponse<Object>> getOfficeRevertedDocuments() {
+		List<DocumentDto> documents = docService.fetchOfficeRevertedDocuments();
+		return ApiResponse.success(documents);
+	}
+
+	@GetMapping("/user/forwarded")
 	public ResponseEntity<ApiResponse<Object>> getUserForwardedDocuments() {
-		List<DocumentDto> documents = documentService.fetchUserForwardedDocuments();
+		List<DocumentDto> documents = docService.fetchUserForwardedDocuments();
 		return ApiResponse.success(documents);
 	}
 
-	@GetMapping("/user-pendings")
+	@GetMapping("/user/pendings")
 	public ResponseEntity<ApiResponse<Object>> getUserPendingDocuments() {
-		List<DocumentDto> documents = documentService.fetchUserPendingDocuments();
+		List<DocumentDto> documents = docService.fetchUserPendingDocuments();
 		return ApiResponse.success(documents);
 	}
 
-	@GetMapping("/user-received")
+	@GetMapping("/user/received")
 	public ResponseEntity<ApiResponse<Object>> getUserReceivedDocuments() {
-		List<DocumentDto> documents = documentService.fetchUserReceivedDocuments();
+		List<DocumentDto> documents = docService.fetchUserReceivedDocuments();
 		return ApiResponse.success(documents);
 	}
+
+	@GetMapping("/user/reverted")
+	public ResponseEntity<ApiResponse<Object>> getUserRevertedDocuments() {
+		List<DocumentDto> documents = docService.fetchUserRevertedDocuments();
+		return ApiResponse.success(documents);
+	}
+
 
 }

@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 
 import com.dasmo.drs_api.constants.NotificationType;
 import com.dasmo.drs_api.constants.SubjectType;
-import com.dasmo.drs_api.constants.TargetType;
+import com.dasmo.drs_api.constants.EntityType;
 import com.dasmo.drs_api.exception.ApiException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +60,7 @@ public class Notification {
 	private NotificationType type;
 
 	@Enumerated(EnumType.STRING)
-	private TargetType targetType;
+	private EntityType targetType;
 
 	private LocalDateTime createdAt = LocalDateTime.now();
 

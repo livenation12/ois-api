@@ -2,13 +2,16 @@ package com.dasmo.drs_api.constants;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum TargetType {
-	OFFICE("Office"),
-	USER("User");
+public enum ActionTypes {
+	ENCODED("Encoded"),
+	FORWARDED("Forwarded"),
+	REVERTED("Reverted"),
+	APPROVED("Approved"),
+	RECEIVED("Received");
 
 	private final String displayName;
 
-	TargetType(String displayName) {
+	ActionTypes(String displayName){
 		this.displayName = displayName;
 	}
 

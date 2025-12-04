@@ -2,8 +2,8 @@ package com.dasmo.drs_api.model;
 
 import java.time.LocalDateTime;
 
-import com.dasmo.drs_api.constants.RoutingAction;
-import com.dasmo.drs_api.constants.TargetType;
+import com.dasmo.drs_api.constants.EntityType;
+import com.dasmo.drs_api.constants.ActionTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,7 +34,13 @@ public class DocumentLog {
 	private Long toId;
 
 	@Enumerated(EnumType.STRING)
-	private RoutingAction action;
+	private EntityType sourceType;
+
+	@Enumerated(EnumType.STRING)
+	private EntityType targetType;
+
+	@Enumerated(EnumType.STRING)
+	private ActionTypes action;
 
 	@Column(name="remarks", columnDefinition = "TEXT")
 	private String remarks;
@@ -42,8 +48,6 @@ public class DocumentLog {
 	@Column(name="additional_remarks", columnDefinition = "TEXT")
 	private String additionalRemarks;
 
-	@Enumerated(EnumType.STRING)
-	private TargetType targetType;
 
 	private LocalDateTime createdAt = LocalDateTime.now();
 

@@ -1,6 +1,7 @@
 package com.dasmo.drs_api.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,5 +21,6 @@ public class NotificationRecipient {
 	@ManyToOne
 	private Notification notification;
 
-	private Long recipientId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private User recipient;
 }

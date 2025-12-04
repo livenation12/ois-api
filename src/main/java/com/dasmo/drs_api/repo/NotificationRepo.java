@@ -22,9 +22,29 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 			    	OR
 			        (n.targetType = 'OFFICE' AND n.targetId = :officeId)
 			        AND
-			        (r.recipientId IS NULL OR r.recipientId != :userId)
+			        (r.recipient.id IS NULL OR r.recipient.id != :userId)
 			""")
 	Integer countUnread(@Param("userId") Long userId, @Param("officeId") Long officeId);
+
+	@Query("""
+			SELECT COUNT(n)
+			FROM Notification n
+			LEFT JOIN n.recipients r
+			WHERE (n.targetType = 'OFFICE' AND n.targetId = :officeId)
+			       AND
+			       (r.recipient.id IS NULL OR r.recipient.id != :userId)
+			""")
+	Integer countUserOfficeUnread(@Param("userId") Long userId, @Param("officeId") Long officeId);
+
+	@Query("""
+			SELECT COUNT(n)
+			FROM Notification n
+			LEFT JOIN n.recipients r
+			WHERE (n.targetType = 'USER' AND n.targetId = :userId)
+				AND
+			 (r.recipient.id IS NULL OR r.recipient.id != :userId)
+			""")
+	Integer countUserUnread(@Param("userId") Long userId);
 
 	@Query("""
 			    SELECT
@@ -51,7 +71,7 @@ public interface NotificationRepo extends JpaRepository<Notification, Long> {
 			        OR
 			    (n.targetType = 'OFFICE' AND n.targetId = :officeId)
 			       AND
-			       (r.recipientId IS NULL OR r.recipientId != :userId)
+			       (r.recipient.id IS NULL OR r.recipient.id != :userId)
 			""")
 	List<Notification> findUnreadByUserAndOffice(@Param("userId") Long userId, @Param("officeId") Long officeId);
 }

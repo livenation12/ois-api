@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.dasmo.drs_api.constants.ActionTypes;
 import com.dasmo.drs_api.constants.DocumentStatus;
-import com.dasmo.drs_api.constants.RoutingAction;
+import com.dasmo.drs_api.constants.EntityType;
 import com.dasmo.drs_api.constants.SourceType;
-import com.dasmo.drs_api.constants.TargetType;
 import com.dasmo.drs_api.dto.DocumentDto;
 import com.dasmo.drs_api.dto.DocumentFullDto;
 import com.dasmo.drs_api.dto.UploadedFile;
@@ -19,14 +19,15 @@ import com.dasmo.drs_api.dto.request.DocumentRequest;
 import com.dasmo.drs_api.exception.ApiException;
 import com.dasmo.drs_api.exception.FieldValidationException;
 import com.dasmo.drs_api.mapper.DocumentAttachmentMapper;
+import com.dasmo.drs_api.mapper.DocumentLogMapper;
 import com.dasmo.drs_api.mapper.DocumentMapper;
 import com.dasmo.drs_api.model.Document;
 import com.dasmo.drs_api.model.DocumentAttachment;
 import com.dasmo.drs_api.model.DocumentLog;
 import com.dasmo.drs_api.model.Office;
 import com.dasmo.drs_api.model.User;
-import com.dasmo.drs_api.repo.DocumentActionRepo;
 import com.dasmo.drs_api.repo.DocumentAttachmentRepo;
+import com.dasmo.drs_api.repo.DocumentLogRepo;
 import com.dasmo.drs_api.repo.DocumentRepo;
 import com.dasmo.drs_api.repo.OfficeRepo;
 import com.dasmo.drs_api.repo.RoutingSlipRepo;
@@ -44,12 +45,14 @@ public class DocumentService {
 	private final DocumentRepo documentRepo;
 	private final OfficeRepo officeRepo;
 	private final DocumentAttachmentRepo docAttachmentRepo;
-	private final DocumentActionRepo docActionRepo;
+	private final DocumentLogRepo docActionRepo;
 	private final SequenceService sequenceService;
 	private final FileStorageService fileStorageService;
 	private final RoutingSlipRepo routingRepo;
 	private final DocumentMapper docMapper;
 	private final DocumentAttachmentMapper docAttachMapper;
+	private final UserService userService;
+	private final DocumentLogMapper docLogMapper;
 
 	@PreAuthorize("hasRole('ENCODER')")
 	@Transactional
@@ -105,11 +108,12 @@ public class DocumentService {
 
 		// Document action
 		DocumentLog docAction = new DocumentLog();
-		docAction.setAction(RoutingAction.ENCODED);
+		docAction.setAction(ActionTypes.ENCODED);
 		docAction.setDocument(document);
+		docAction.setSourceType(EntityType.OFFICE);
 		docAction.setFromId(officeSource.getId());
 		docAction.setToId(principal.getOffice().getId());
-		docAction.setTargetType(TargetType.OFFICE);
+		docAction.setTargetType(EntityType.OFFICE);
 		docAction.setCreatedBy(principal);
 		docActionRepo.save(docAction);
 
@@ -128,6 +132,10 @@ public class DocumentService {
 	public List<DocumentDto> fetchByFilteredStatus(DocumentStatus status) {
 		List<Document> documents = documentRepo.findByStatus(status);
 		return docMapper.toDtoList(documents);
+	}
+
+	public Document fetchByIdOrFail(Long documentId) {
+		return documentRepo.findById(documentId).orElseThrow(() -> new ApiException("Document not found", HttpStatus.NOT_FOUND));
 	}
 
 	public List<DocumentDto> fetchCreatedDocuments() {
@@ -184,6 +192,12 @@ public class DocumentService {
 		return docMapper.toDtoList(documents);
 	}
 
+	public List<DocumentDto> fetchOfficeRevertedDocuments(){
+		User user = PrincipalUtil.getAuthenticatedUser();
+		List<Document> documents = documentRepo.findOfficeRevertedDocuments(user.getOffice().getId());
+		return docMapper.toDtoList(documents);
+	}
+
 	public List<DocumentDto> fetchUserForwardedDocuments() {
 		User user = PrincipalUtil.getAuthenticatedUser();
 		List<Document> documents = documentRepo.findUserForwardedDocuments(user.getId());
@@ -201,5 +215,12 @@ public class DocumentService {
 		List<Document> documents = documentRepo.findUserReceivedDocuments(user.getId());
 		return docMapper.toDtoList(documents);
 	}
+
+	public List<DocumentDto> fetchUserRevertedDocuments() {
+		User user = PrincipalUtil.getAuthenticatedUser();
+		List<Document> documents = documentRepo.findUserRevertedDocuments(user.getId());
+		return docMapper.toDtoList(documents);
+	}
+
 
 }

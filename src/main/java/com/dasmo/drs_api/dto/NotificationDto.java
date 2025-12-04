@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.dasmo.drs_api.constants.NotificationType;
-import com.dasmo.drs_api.constants.TargetType;
+import com.dasmo.drs_api.constants.EntityType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
@@ -25,7 +25,7 @@ public class NotificationDto {
 
 	private String message;
 
-	private TargetType targetType;
+	private EntityType targetType;
 
 	private Map<String, Object> additionalData;
 

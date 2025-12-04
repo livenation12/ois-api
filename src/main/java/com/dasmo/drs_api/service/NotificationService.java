@@ -17,7 +17,6 @@ import com.dasmo.drs_api.model.User;
 import com.dasmo.drs_api.repo.NotificationRecipientRepo;
 import com.dasmo.drs_api.repo.NotificationRepo;
 import com.dasmo.drs_api.repo.OfficeRepo;
-import com.dasmo.drs_api.repo.UserRepo;
 import com.dasmo.drs_api.util.PrincipalUtil;
 
 import jakarta.transaction.Transactional;
@@ -30,7 +29,7 @@ public class NotificationService {
 	private final SimpMessagingTemplate messagingTemplate;
 	private final NotificationRepo notifRepo;
 	private final NotificationRecipientRepo recipientRepo;
-	private final UserRepo userRepo;
+	private final UserService userService;
 	private final OfficeRepo officeRepo;
 	private final NotificationMapper notifMapper;
 
@@ -40,7 +39,7 @@ public class NotificationService {
 
 	@Transactional
 	public void doMarkAllAsRead() {
-		User user = PrincipalUtil.getAuthenticatedUser();
+		User user = userService.fetchUserPrincipal();
 		List<Notification> unreadNotifs = notifRepo.findUnreadByUserAndOffice(user.getId(), user.getOffice().getId());
 
 		List<NotificationRecipient> recipients = new ArrayList<>();
@@ -49,7 +48,7 @@ public class NotificationService {
 		for(Notification unreadNotif : unreadNotifs) {
 			NotificationRecipient notifRecipient = new NotificationRecipient();
 			notifRecipient.setNotification(unreadNotif);
-			notifRecipient.setRecipientId(user.getId());
+			notifRecipient.setRecipient(user);
 
 			recipients.add(notifRecipient);
 		}
@@ -78,6 +77,18 @@ public class NotificationService {
 		return unreadCount;
 	}
 
+	public Integer fetchUserOfficeUnreadCount() {
+		User user = PrincipalUtil.getAuthenticatedUser();
+		Integer unreadCount = notifRepo.countUserOfficeUnread(user.getId(), user.getOffice().getId());
+		return unreadCount;
+	}
+
+	public Integer fetchUserUnreadCount() {
+		User user = PrincipalUtil.getAuthenticatedUser();
+		Integer unreadCount = notifRepo.countUserUnread(user.getId());
+		return unreadCount;
+	}
+
 	public StringBuilder messageBuilder(Notification notif) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(notif.getSender().getFullName())
@@ -86,5 +97,7 @@ public class NotificationService {
 		.append(" ");
 		return sb;
 	}
+
+
 
 }

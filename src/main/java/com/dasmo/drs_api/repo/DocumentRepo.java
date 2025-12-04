@@ -16,27 +16,6 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 	@EntityGraph(attributePaths = "attachments")
 	List<Document> findAll();
 
-	// @Query("""
-	// SELECT DISTINCT d FROM DocumentAction da
-	// LEFT JOIN da.document d
-	// LEFT JOIN FETCH d.attachments
-	// WHERE da.action = :action
-	// AND da.toOffice.id = :officeId
-	// """)
-	// List<Document> findByActionAndFromOfficeIdWithAttachments(@Param("action")
-	// RoutingAction action,
-	// @Param("officeId") Long officeId);
-
-	/*
-	 * @Query(""" SELECT DISTINCT d FROM DocumentAction da LEFT JOIN da.document d
-	 * LEFT JOIN FETCH d.attachments WHERE da.action = :action AND da.toOffice.id =
-	 * :officeId """) List<Document>
-	 * findByActionAndToOfficeIdWithAttachments(@Param("action") RoutingAction
-	 * action,
-	 *
-	 * @Param("officeId") Long officeId);
-	 */
-
 	List<Document> findByCreatedById(Long createdById);
 
 	List<Document> findByStatus(DocumentStatus status);
@@ -64,7 +43,7 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 					JOIN dl.document d
 				WHERE dl.action = 'FORWARDED'
 					AND dl.fromId = :officeId
-					AND dl.targetType = 'OFFICE'
+					AND dl.sourceType = 'OFFICE'
 				ORDER BY dl.createdAt DESC
 			""")
 	List<Document> findOfficeForwardedDocuments(@Param("officeId") Long officeId);
@@ -72,7 +51,7 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 	@Query("""
 				SELECT d FROM Document d
 					JOIN d.activeLog al
-				WHERE al.action = 'FORWARDED'
+				WHERE al.action IN ('FORWARDED', 'REVERTED')
 					AND al.targetType = 'OFFICE'
 					AND al.toId = :officeId
 				ORDER BY al.createdAt DESC
@@ -91,11 +70,20 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 	List<Document> findOfficeReceivedDocuments(@Param("officeId") Long officeId);
 
 	@Query("""
+			SELECT DISTINCT d FROM Document d
+			JOIN d.logs dl
+			WHERE dl.action = 'REVERTED'
+				AND dl.sourceType = 'OFFICE'
+				AND dl.fromId = :officeId
+			""")
+	List<Document> findOfficeRevertedDocuments(@Param("officeId") Long officeId);
+
+	@Query("""
 			SELECT DISTINCT d FROM DocumentLog dl
 				JOIN dl.document d
 			WHERE dl.action = 'FORWARDED'
 				AND dl.fromId = :userId
-				AND dl.targetType = 'USER'
+				AND dl.sourceType = 'USER'
 			ORDER BY dl.createdAt DESC
 			""")
 	List<Document> findUserForwardedDocuments(@Param("userId") Long userId);
@@ -103,7 +91,7 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 	@Query("""
 			SELECT DISTINCT d FROM Document d
 				JOIN d.activeLog al
-			WHERE al.action = 'FORWARDED'
+			WHERE al.action IN ('FORWARDED', 'REVERTED')
 				AND al.toId = :userId
 				AND al.targetType = 'USER'
 			ORDER BY al.createdAt DESC
@@ -119,6 +107,15 @@ public interface DocumentRepo extends JpaRepository<Document, Long> {
 			ORDER BY al.createdAt DESC
 			""")
 	List<Document> findUserReceivedDocuments(@Param("userId") Long userId);
+
+	@Query("""
+			SELECT DISTINCT d FROM Document d
+			JOIN d.logs dl
+			WHERE dl.action = 'REVERTED'
+				AND dl.sourceType = 'USER'
+				AND dl.fromId = :userId
+			""")
+	List<Document> findUserRevertedDocuments(@Param("userId") Long userId);
 
 
 }

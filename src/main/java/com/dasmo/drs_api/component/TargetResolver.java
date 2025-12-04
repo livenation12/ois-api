@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.dasmo.drs_api.constants.TargetType;
+import com.dasmo.drs_api.constants.EntityType;
 import com.dasmo.drs_api.mapper.OfficeMapper;
 import com.dasmo.drs_api.mapper.UserMapper;
 import com.dasmo.drs_api.model.DocumentLog;
@@ -30,7 +30,7 @@ public class TargetResolver {
 		}
 
 		Long fromId = log.getFromId();
-		TargetType type = log.getTargetType();
+		EntityType type = log.getTargetType();
 
 		Object entity;
 
@@ -60,7 +60,7 @@ public class TargetResolver {
 		}
 
 		Long id = notification.getTargetId();
-		TargetType type = notification.getTargetType();
+		EntityType type = notification.getTargetType();
 		if (id == null || type == null) {
 			return null;
 		}
